@@ -1,6 +1,6 @@
-# setwd('/root/R_PROJ_LVQ/')
-# setwd("/root/")
-setwd("C:/Users/akade/Documents/R_PROJ_LVQ")
+C<-Sys.info()
+if(C[1]=='Windows'){setwd("C:/Users/akade/Documents/R_PROJ_LVQ")}
+if(C[1]=='Linux'  ){setwd('/root/R_PROJ_LVQ/')}
 cat("\014") 
 rm(list = ls())
 set.seed(Sys.time())
@@ -11,7 +11,7 @@ dev_height <- 768
 dev_width  <- 9
 dev_height <- 7
 dev_unit <- "in"
-while (!is.null(dev.list())){dev.off()}
+# while (!is.null(dev.list())){dev.off()}
 
 # git remote set-url origin https://github.com/akademikou/PROJ_LVQ.git
 usethis::use_git_config(user.name="akademikou", 
@@ -28,7 +28,7 @@ source("~/R_FUNC/func_FILE.R")
 source("~/R_FUNC/func_BACKTEST.R")
 source("~/R_FUNC/func_CI.R")
 source("~/R_FUNC/func_auxM3.R")
-
+#PSO <- read.table("RUN_XRP/PSO_OPT.txt",header = FALSE)
 PSO <- read.table("PSO_OPT.txt",header = FALSE)
 SIL <- read.table("old_PSO_OPT.txt",header = FALSE)
 SIL <- rbind(SIL,PSO)
@@ -39,11 +39,16 @@ print('OK')
 PAR <- GET_PAR()
 TI  <- READ_WITH_TIME("ASSET_TI.txt")
 TI  <- xts(TI,order.by = as.POSIXct(index(TI)))
+TI$Open  <- TI$Open /coredata(TI$Close[[1000]])
+TI$High  <- TI$High /coredata(TI$Close[[1000]])
+TI$Low   <- TI$Low  /coredata(TI$Close[[1000]])
+TI$Close <- TI$Close/coredata(TI$Close[[1000]])
 
-TI$Open  <- TI$Open /coredata(TI$Close[[1]])
-TI$High  <- TI$High /coredata(TI$Close[[1]])
-TI$Low   <- TI$Low  /coredata(TI$Close[[1]])
-TI$Close <- TI$Close/coredata(TI$Close[[1]])
+ENB=max(abs(TI$PCD  )); print(ENB); TI$PCD  <-(TI$PCD   *100/ENB)
+ENB=max(abs(TI$EMAC )); print(ENB); TI$EMAC <-(TI$EMAC  *100/ENB)
+ENB=max(abs(TI$RSIC )); print(ENB); TI$RSIC <-(TI$RSIC  *100/ENB)
+ENB=max(abs(TI$ATR  )); print(ENB); TI$ATR  <-(TI$ATR   *100/ENB)
+ENB=max(abs(TI$STOCH)); print(ENB); TI$STOCH<-(TI$STOCH *100/ENB)
 
 df  <- data.frame(lag(coredata(TI$PCD  ),0), lag(coredata(TI$PCD  ),1), lag(coredata(TI$PCD  ),2),
                   lag(coredata(TI$EMAC ),0), lag(coredata(TI$EMAC ),1), lag(coredata(TI$EMAC ),2),
@@ -54,6 +59,17 @@ df  <- data.frame(lag(coredata(TI$PCD  ),0), lag(coredata(TI$PCD  ),1), lag(core
                   lag(coredata(TI$STOCH),0), lag(coredata(TI$STOCH),1), lag(coredata(TI$STOCH),2),
                   lag(coredata(TI$RSI  ),0), lag(coredata(TI$RSI  ),1), lag(coredata(TI$RSI  ),2))
 df[is.na(df)] <-0
+
+
+
+LIM<-data.frame(matrix(0,nrow=ncol(df),ncol=4))
+for(i in 1:ncol(df)){
+  LIM[i,1]<-max(PSO[,i])
+  LIM[i,2]<-min(PSO[,i])
+  LIM[i,3]<-max(df [,i])
+  LIM[i,4]<-min(df [,i])
+}
+# stop()
 # AD<-names(TI)
 # for(i in 1:ncol(TI)){print(c(AD[i],round(min(TI[,i]),2),round(max(TI[,i]),2)))}
 TI$RSI     <- ((TI$RSI+100)*0.5)
@@ -63,7 +79,6 @@ CIZ1   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ1)<-
 CIZ2   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ2)<-c('EMIR')
 CIZ3   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ3)<-c('EMIR')
 CIZ4   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ4)<-c('EMIR')
-PSO  <- read.table("PSO_OPT.txt",header = FALSE)
 nGIR <- (ncol(df))
 nPAR <- (ncol(PSO)-3)
 nPSS <- 5

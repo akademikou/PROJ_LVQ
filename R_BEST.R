@@ -1,6 +1,6 @@
-setwd('/root/R_PROJ_LVQ/')
-# setwd("/root/")
-# setwd("C:/Users/akade/Documents/R_PROJ_LVQ")
+C<-Sys.info()
+if(C[1]=='Windows'){setwd("C:/Users/akade/Documents/R_PROJ_LVQ")}
+if(C[1]=='Linux'  ){setwd('/root/R_PROJ_LVQ/')}
 cat("\014") 
 rm(list = ls())
 set.seed(Sys.time())
