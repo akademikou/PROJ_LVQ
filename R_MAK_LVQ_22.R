@@ -27,24 +27,48 @@ source('~/R_FUNC/func_BACKTEST.R')
 source('~/R_FUNC/func_CI.R')
 source('~/R_FUNC/func_auxM3.R')
 
-VER      <- 'V3'
-curryncy <- 'BTC'
-F_NAME_1 <- paste(VER,'_',curryncy,'_005/PSO_OPT_',curryncy,'.txt',sep='')
-F_NAME_3 <- paste(VER,'_',curryncy,'_005/ASSET_',curryncy,'.txt',sep='')
-F_NAME_4 <- paste(VER,'_',curryncy,'_005/EMIR_TAM.txt',sep='')
-
 F_NAME_1 <- 'PSO_OPT.txt'
 F_NAME_2 <- 'old_PSO_OPT.txt'
-# F_NAME_4 <- paste('EMIR_TAM.txt',sep='')
+F_NAME_3 <- 'ASSET_BTC.txt'
+F_NAME_4 <- 'EMIR_TAM.txt'
 F_NAME_5 <- 'EMIR_RUN_'
 
 PSO <- read.table(F_NAME_1,header = FALSE); EN <- ncol(PSO)
 SIL <- read.table(F_NAME_2,header = FALSE)
 SIL <- rbind(SIL[,1:(EN-3)],PSO[,1:(EN-3)])
 SIL <- SIL[!duplicated(SIL), ]
+
 write.table(SIL, file = F_NAME_2, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 print('OK')
 
+AA <- ((((ncol(PSO)-3)/15))/2)
+tmp<- PSO
+jj <- 1
+for(k in 1: 15){
+  for(j in 1:AA){
+    j1=j+(k-1)*AA*2
+    PSO[,j1] <- tmp[,jj]
+    PSO[,(j1+AA)] <- tmp[,jj+1]
+    print(c(j1,j1+AA,jj,jj+1))
+    jj <- (jj+2)
+  }
+}
+
+AA <- ((((ncol(SIL)-3)/15))/2)
+tmp<- SIL
+jj <- 1
+for(k in 1: 15){
+  for(j in 1:AA){
+    j1=j+(k-1)*AA*2
+    SIL[,j1] <- tmp[,jj]
+    SIL[,(j1+AA)] <- tmp[,jj+1]
+    print(c(j1,j1+AA,jj,jj+1))
+    jj <- (jj+2)
+  }
+}
+# write.table(SIL, file = F_NAME_2, sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+# print('OK')
+# stop()
 ########################################################################
 PAR <- GET_PAR()
 TI  <- READ_WITH_TIME(F_NAME_3)
@@ -53,48 +77,73 @@ TI$Open  <- TI$Open /coredata(TI$Close[[1001]])
 TI$High  <- TI$High /coredata(TI$Close[[1001]])
 TI$Low   <- TI$Low  /coredata(TI$Close[[1001]])
 TI$Close <- TI$Close/coredata(TI$Close[[1001]])
-tmp1 <-  ((lag(coredata(TI$RSI ),0)-lag(coredata(TI$RSI ),1))*2)
-tmp2 <-  ((lag(coredata(TI$RSI ),1)-lag(coredata(TI$RSI ),2))*2)
-tmp3 <-  ((lag(coredata(TI$RSI ),2)-lag(coredata(TI$RSI ),3))*2)
+
+# ENB=max(abs(TI$PCD  )); print(ENB); TI$PCD  <-(TI$PCD   *100/ENB)
+# ENB=max(abs(TI$EMAC )); print(ENB); TI$EMAC <-(TI$EMAC  *100/ENB)
+# ENB=max(abs(TI$RSIC )); print(ENB); TI$RSIC <-(TI$RSIC  *100/ENB)
+# ENB=max(abs(TI$ATR  )); print(ENB); TI$ATR  <-(TI$ATR   *100/ENB)
+# ENB=max(abs(TI$STOCH)); print(ENB); TI$STOCH<-(TI$STOCH *100/ENB)
+
+# df  <- data.frame(lag(coredata(TI$PCD  ),0),lag(coredata(TI$PCD  ),1),lag(coredata(TI$PCD  ),2),
+#                   lag(coredata(TI$EMAC ),0),lag(coredata(TI$EMAC ),1),lag(coredata(TI$EMAC ),2),
+#                   lag(coredata(TI$RSIC ),0),lag(coredata(TI$RSIC ),1),lag(coredata(TI$RSIC ),2),
+#                   lag(coredata(TI$ATR  ),0),lag(coredata(TI$ATR  ),1),lag(coredata(TI$ATR  ),2),
+#                   lag(coredata(TI$WPR  ),0),lag(coredata(TI$WPR  ),1),lag(coredata(TI$WPR  ),2),
+#                   lag(coredata(TI$MFI  ),0),lag(coredata(TI$MFI  ),1),lag(coredata(TI$MFI  ),2),
+#                   lag(coredata(TI$STOCH),0),lag(coredata(TI$STOCH),1),lag(coredata(TI$STOCH),2),
+#                   lag(coredata(TI$RSI  ),0),lag(coredata(TI$RSI  ),1),lag(coredata(TI$RSI  ),2))
+
+tmp1 <-  (lag(coredata(TI$RSI ),0)-lag(coredata(TI$RSI ),1))*2
+tmp2 <-  (lag(coredata(TI$RSI ),1)-lag(coredata(TI$RSI ),2))*2
+# df  <- data.frame(coredata(TI$RSIC), lag(coredata(TI$RSIC),1),
+#                   coredata(TI$SMAC), lag(coredata(TI$SMAC),1),
+#                   coredata(TI$MFI ), lag(coredata(TI$MFI ),1),
+#                   coredata(TI$RSI ), lag(coredata(TI$RSI ),1),
+#                   coredata(TI$WPR ), lag(coredata(TI$WPR ),1),
+#                   coredata(TI$PCD ), lag(coredata(TI$PCD ),1),
+#                   coredata(TI$CCI ), lag(coredata(TI$CCI ),1),
+#                   coredata(TI$ADX ), lag(coredata(TI$ADX ),1),
+#                   coredata(TI$ROC ), lag(coredata(TI$ROC ),1),
+#                   tmp1,tmp2,100)
 
 df  <- data.frame(coredata(TI$RSIC),
+                  coredata(TI$SMAC),
+                  coredata(TI$MFI ),
                   coredata(TI$RSI ),
                   coredata(TI$WPR ),
+                  coredata(TI$PCD ),
                   coredata(TI$CCI ),
                   coredata(TI$ADX ),
+                  coredata(TI$ROC ),
                   tmp1)
-if (VER == 'V1' || VER == 'V2'){
-  df  <- cbind(df,data.frame(
-    lag(coredata(TI$RSIC),1),
-    lag(coredata(TI$RSI ),1),
-    lag(coredata(TI$WPR ),1),
-    lag(coredata(TI$CCI ),1),
-    lag(coredata(TI$ADX ),1),
-    tmp2))
-}
-if (VER == 'V1' ){
-  df  <- cbind(df,data.frame(
-    lag(coredata(TI$RSIC ),2),
-    lag(coredata(TI$RSI  ),2),
-    lag(coredata(TI$WPR  ),2),
-    lag(coredata(TI$CCI  ),2),
-    lag(coredata(TI$ADX  ),2),
-    tmp3))
-}
-if(VER =='V2'){df <- cbind(df,100)}
-if(VER =='V3'){df <- cbind(df,df,df)}
+df  <- cbind(df,data.frame(
+                lag(coredata(TI$RSIC),1),
+                lag(coredata(TI$SMAC),1),
+                lag(coredata(TI$MFI ),1),
+                lag(coredata(TI$RSI ),1),
+                lag(coredata(TI$WPR ),1),
+                lag(coredata(TI$PCD ),1),
+                lag(coredata(TI$CCI ),1),
+                lag(coredata(TI$ADX ),1),
+                lag(coredata(TI$ROC ),1),
+                tmp2))
+df  <- cbind(df,100)
+
 df[is.na(df)] <-0
 
-tmp<-names(df)
-tmp[6]<-'dRSI'
-names(df)
-names(df)<-tmp
-for(i in 1:ncol(df)){
-  ENB=max(max(df[,i]),abs(min(df[,i])))
-  df[,i]<-(100*df[,i]/ENB)
-}
+# LIM<-data.frame(matrix(0,nrow=ncol(df),ncol=4))
+# for(i in 1:ncol(df)){
+#   LIM[i,1]<-max(PSO[,i])
+#   LIM[i,2]<-min(PSO[,i])
+#   LIM[i,3]<-max(df [,i])
+#   LIM[i,4]<-min(df [,i])
+# }
+# stop()
+# AD<-names(TI)
+# for(i in 1:ncol(TI)){print(c(AD[i],round(min(TI[,i]),2),round(max(TI[,i]),2)))}
 TI$RSI     <- ((TI$RSI+100)*0.5)
 ########################################################################
+# TI     <- TI[DATA_TAM,]
 CIZ1   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ1)<-c('EMIR')
 CIZ2   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ2)<-c('EMIR')
 CIZ3   <- xts(numeric(nrow(TI)),order.by = as.POSIXct(index(TI))); names(CIZ3)<-c('EMIR')
@@ -147,48 +196,41 @@ if(1){
 ################################################################################
 # LVQ PSO ILE ANALIZ
 if(1){
-  BOY <- ncol(PSO)
   DEL <- 100
   CIZ4$EMIR <- 0;
   D    <- numeric(nH);
   for(line in 1:(nrow(PSO))){
-    ilk  <- (PSO[line,(BOY-1)]+1)
-    son  <- (PSO[line,(BOY-0)])
+    ilk  <- (PSO[line,(ncol(PSO)-1)]+1)
+    son  <- (PSO[line,(ncol(PSO)-0)])
     
     a2   <- (son+  1); u2 <- (son+DEL);
     a1   <- (a2-DEL) ; u1 <- (u2-DEL);
 
     print(c(a2,u2))
-    W    <- (PSO[line,1:(BOY-3)]);
+    W    <- (PSO[line,1:(ncol(PSO)-3)]);
     for(k in a2:u2){
       if(k>nrow(df)){break;}
-      BSL <- 1
-      BTS <- nGIR/3
-      oEMIR <-  coredata(CIZ4$EMIR[k-1])
-      if(VER == 'V2'){D1[nGIR] <- (CoEMIR*100)}
-      if(VER == 'V1'){BSL <- 1; BTS <- nGIR;}
-      if(VER == 'V3'){
-             if(oEMIR == -1){BSL <- ((0*nGIR/3)+1); BTS <- ((1*nGIR/3));}
-        else if(oEMIR ==  0){BSL <- ((1*nGIR/3)+1); BTS <- ((2*nGIR/3));}
-        else if(oEMIR ==  1){BSL <- ((2*nGIR/3)+1); BTS <- ((3*nGIR/3));}
-      }
-      # print(c(nGIR,CIZ4$EMIR[(k-1)] ,BSL,SON))
-      ARA <- (BSL:BTS)
-      D1  <- as.numeric((df[k,ARA]))
+      ind  <- 1;
+      D1 <- as.numeric((df[k,1:nGIR]))
+      
+      D1[nGIR] <- (CIZ4$EMIR[k-1]*100)
       for (i in 1:nH){
-        err  <- (D1-as.numeric(W[1,ARA]));
+        D[i] <- 0
+        D2 <- as.numeric((W[1,ind:(ind+nGIR-1)]))
+        err  <- (D1-D2);
         D[i] <- sum(err*err);
-        ARA  <- (ARA+nGIR);
+        ind  <- (ind+nGIR);
       }
-      OUT <- which.min(D[1:nH]);
+      OUT <- which.min(D);
       net <- floor((OUT-1)/nPSS)
            if(net == 0){nEMIR <- (-1);}
       else if(net == 1){nEMIR <- ( 0);}
       else if(net == 2){nEMIR <- ( 1);}
       else{print('HATA'); stop()}
       if(nEMIR == 0){nEMIR <- CIZ4$EMIR[(k-1)]}
-      CIZ4$EMIR[k] <- EXP_KNOW(nEMIR,coredata(CIZ4$EMIR[(k-1)]),k,TI$RSI)
       # CIZ4$EMIR[k] <- nEMIR
+      CIZ4$EMIR[k]  <- EXP_KNOW(nEMIR,coredata(CIZ4$EMIR[(k-1)]),k,TI$RSI)
+      
     }
   }
   CIZ4$EMIR[nrow(CIZ4)]  <- 0
@@ -197,6 +239,11 @@ if(1){
   info <- TRADE_PERFORMANCE_TRADE(TI,coredata(CIZ4$EMIR),PAR)
   YAZI <- paste('CALC_C_TEST\n',F_NAME_1)
   title(YAZI, col.main='blue', cex.main=2, font.main=4, adj=0, line=0)
+  # col.main: Changed title font color to blue.
+  # cex.main: Increased title font to twice the default size.
+  # font.main: Changed title font style to italic.
+  # adj: Moved title all the way to the left.
+  # line: Moved title down to touch the top of the plot.
 }
 ########################################################################
 warnings()

@@ -42,10 +42,10 @@ BTC[,1:4] <- BTC[,1:4]/coredata(BTC$Close[[1000]])
 ETH[,1:4] <- ETH[,1:4]/coredata(ETH$Close[[1000]])
 XRP[,1:4] <- XRP[,1:4]/coredata(XRP$Close[[1000]])
 
-F_NAME_1 <- "VERI_BNB/EMIR_TAM.txt"
-F_NAME_2 <- "VERI_BTC/EMIR_TAM.txt"
-F_NAME_3 <- "VERI_ETH/EMIR_TAM.txt"
-F_NAME_4 <- "VERI_XRP/EMIR_TAM.txt"
+F_NAME_1 <- "TAX_001_BNB/EMIR_TAM.txt"
+F_NAME_2 <- "TAX_001_BTC/EMIR_TAM.txt"
+F_NAME_3 <- "TAX_001_ETH/EMIR_TAM.txt"
+F_NAME_4 <- "TAX_001_XRP/EMIR_TAM.txt"
 
 CIZ1   <- xts(numeric(nrow(BNB)),order.by = as.POSIXct(index(BNB))); names(CIZ1)<-c('EMIR')
 CIZ2   <- xts(numeric(nrow(BTC)),order.by = as.POSIXct(index(BTC))); names(CIZ2)<-c('EMIR')
